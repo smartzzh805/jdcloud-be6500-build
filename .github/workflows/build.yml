@@ -31,30 +31,30 @@ jobs:
         run: |
           cat > /tmp/fetch.sh <<'SH'
           set -x
-          set -e
           SHA=6b5baeb9a033192796ef074e78cf05653bf5b43f
           URL="https://codeload.github.com/VIKINGYFY/immortalwrt/tar.gz/${SHA}"
           echo "downloading $URL"
-          curl -fL --retry 5 --retry-delay 5 -o src.tar.gz "$URL"
+          curl -fL --retry 5 --retry-delay 5 -o src.tar.gz "$URL" || { echo FAIL_curl; exit 11; }
           ls -lh src.tar.gz
           SIZE=$(stat -c%s src.tar.gz)
           echo "tarball size = $SIZE bytes"
           MAGIC=$(head -c 2 src.tar.gz | od -An -tx1 | tr -d ' \n')
           echo "magic = $MAGIC"
           mkdir -p source
-          tar -xzf src.tar.gz -C source --strip-components=1
+          tar -xzf src.tar.gz -C source --strip-components=1 || { echo FAIL_tar; exit 13; }
           rm -f src.tar.gz
           echo ==== tree root ====
           ls source | head -30
+          du -sh source
           echo ==== libubox ====
-          grep PKG_SOURCE_VERSION source/package/libs/libubox/Makefile
+          grep PKG_SOURCE_VERSION source/package/libs/libubox/Makefile || echo WARN_libubox_grep
           echo ==== ubus ====
-          grep PKG_SOURCE_VERSION source/package/system/ubus/Makefile
+          grep PKG_SOURCE_VERSION source/package/system/ubus/Makefile || echo WARN_ubus_grep
           SH
-          bash /tmp/fetch.sh > ../fetch.log 2>&1
+          bash /tmp/fetch.sh > fetch.log 2>&1
           RC=$?
-          echo "$RC" > ../fetch.rc
-          tail -n 40 ../fetch.log
+          echo "$RC" > fetch.rc
+          tail -n 60 fetch.log
           echo "fetch rc=$RC"
           exit $RC
 
