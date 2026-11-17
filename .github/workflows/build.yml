@@ -62,8 +62,12 @@ jobs:
         working-directory: source
         run: |
           printf 'src-git packages https://github.com/immortalwrt/packages.git\nsrc-git luci https://github.com/immortalwrt/luci.git\n' > feeds.conf.default
-          ./scripts/feeds update -a
-          ./scripts/feeds install -a
+          ( ./scripts/feeds update -a && ./scripts/feeds install -a ) > ../feeds.log 2>&1
+          RC=$?
+          tail -n 40 ../feeds.log
+          echo "feeds rc=$RC"
+          echo "$RC" > ../feeds.rc
+          [ "$RC" = "0" ] || exit $RC
           echo ==== appfilter source ====
           ls -l package/feeds/packages/open-app-filter 2>/dev/null || echo ERR_no_openappfilter
           ls -l package/feeds/luci/luci-app-appfilter 2>/dev/null || echo ERR_no_luci_appfilter
@@ -134,6 +138,8 @@ jobs:
             cat fetch.rc 2>/dev/null || echo "(none)"
             echo "==== fetch.log (last 120) ===="
             tail -n 120 fetch.log 2>/dev/null || echo "(none)"
+            echo "==== feeds.log (last 120) ===="
+            tail -n 120 feeds.log 2>/dev/null || echo "(none)"
             echo "==== build.log (last 120) ===="
             tail -n 120 build.log 2>/dev/null || echo "(none)"
             echo "==== tree ===="
