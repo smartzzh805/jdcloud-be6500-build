@@ -1,18 +1,72 @@
-run=13 sha=c71c16646b03091d7ba251ad2d97c93d2f8f4a4f
+run=14 sha=7c6391c32d3809374534deb454206599f24adada
 ==== fetch.rc ====
-(none)
+0
 ==== fetch.log (last 120) ====
-(none)
++ SHA=6b5baeb9a033192796ef074e78cf05653bf5b43f
++ URL=https://codeload.github.com/VIKINGYFY/immortalwrt/tar.gz/6b5baeb9a033192796ef074e78cf05653bf5b43f
++ echo 'downloading https://codeload.github.com/VIKINGYFY/immortalwrt/tar.gz/6b5baeb9a033192796ef074e78cf05653bf5b43f'
+downloading https://codeload.github.com/VIKINGYFY/immortalwrt/tar.gz/6b5baeb9a033192796ef074e78cf05653bf5b43f
++ curl -fL --retry 5 --retry-delay 5 -o src.tar.gz https://codeload.github.com/VIKINGYFY/immortalwrt/tar.gz/6b5baeb9a033192796ef074e78cf05653bf5b43f
+  % Total    % Received % Xferd  Average Speed  Time    Time    Time   Current
+                                 Dload  Upload  Total   Spent   Left   Speed
+  0      0   0      0   0      0      0      0                              0100  5.76M   0  5.76M   0      0  5.60M      0           00:01          5.61M100 13.79M   0 13.79M   0      0  6.72M      0           00:02          6.72M100 16.97M   0 16.97M   0      0  6.88M      0           00:02          6.72M100 16.97M   0 16.97M   0      0  6.88M      0           00:02          6.72M100 16.97M   0 16.97M   0      0  6.88M      0           00:02          6.72M
++ ls -lh src.tar.gz
+-rw-r--r-- 1 runner runner 17M Nov 17 23:45 src.tar.gz
+++ stat -c%s src.tar.gz
++ SIZE=17800423
++ echo 'tarball size = 17800423 bytes'
+tarball size = 17800423 bytes
+++ head -c 2 src.tar.gz
+++ od -An -tx1
+++ tr -d ' \n'
++ MAGIC=1f8b
++ echo 'magic = 1f8b'
+magic = 1f8b
++ mkdir -p source
++ tar -xzf src.tar.gz -C source --strip-components=1
++ rm -f src.tar.gz
++ echo ==== tree root ====
+==== tree root ====
++ ls source
++ head -30
+BSDmakefile
+COPYING
+Config.in
+LICENSES
+Makefile
+README.md
+SECURITY.md
+config
+feeds.conf.default
+include
+package
+rules.mk
+scripts
+target
+toolchain
+tools
++ du -sh source
+114M	source
++ echo ==== libubox ====
+==== libubox ====
++ grep PKG_SOURCE_VERSION source/package/libs/libubox/Makefile
+PKG_SOURCE_VERSION:=a396f38a8568a1d670c240465cd8d24fdfdf6463
++ echo ==== ubus ====
+==== ubus ====
++ grep PKG_SOURCE_VERSION source/package/system/ubus/Makefile
+PKG_SOURCE_VERSION:=db20eff5535fe3126c05dc0edc029caf0e82fe10
 ==== build.log (last 120) ====
 (none)
 ==== tree ====
-total 32
-drwxr-xr-x  6 runner runner 4096 Nov 17 23:43 .
-drwxr-xr-x  3 runner runner 4096 Nov 17 23:41 ..
-drwxr-xr-x  7 runner runner 4096 Nov 17 23:40 .git
-drwxr-xr-x  3 runner runner 4096 Nov 17 23:40 .github
--rw-r--r--  1 runner runner  496 Nov 17 23:40 README.md
--rw-r--r--  1 runner runner  547 Nov 17 23:40 config.seed
-drwxr-xr-x  2 runner runner 4096 Nov 17 23:43 diag
-drwxr-xr-x 15 runner runner 4096 Nov 17 23:43 source
+total 40
+drwxr-xr-x  6 runner runner 4096 Nov 17 23:45 .
+drwxr-xr-x  3 runner runner 4096 Nov 17 23:44 ..
+drwxr-xr-x  7 runner runner 4096 Nov 17 23:44 .git
+drwxr-xr-x  3 runner runner 4096 Nov 17 23:44 .github
+-rw-r--r--  1 runner runner  496 Nov 17 23:44 README.md
+-rw-r--r--  1 runner runner  547 Nov 17 23:44 config.seed
+drwxr-xr-x  2 runner runner 4096 Nov 17 23:44 diag
+-rw-r--r--  1 runner runner 2107 Nov 17 23:45 fetch.log
+-rw-r--r--  1 runner runner    2 Nov 17 23:45 fetch.rc
+drwxr-xr-x 15 runner runner 4096 Nov 17 23:47 source
 500M	source
