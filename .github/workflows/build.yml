@@ -27,22 +27,35 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y build-essential clang flex bison g++ gawk gcc-multilib g++-multilib gettext git libncurses5-dev libncursesw5-dev libssl-dev python3-setuptools rsync swig unzip zlib1g-dev file wget
 
-      - name: Clone source at firmware commit 6b5baeb
+      - name: Fetch source tree at firmware commit 6b5baeb
         run: |
           SHA=6b5baeb9a033192796ef074e78cf05653bf5b43f
-          git clone --branch owrt https://github.com/VIKINGYFY/immortalwrt.git source
-          cd source
-          git checkout $SHA
-          echo ==== HEAD ====
-          git rev-parse HEAD
-          echo ==== libubox upstream commit (expect a396f38a) ====
-          grep PKG_SOURCE_VERSION package/libs/libubox/Makefile || true
+          URL="https://codeload.github.com/VIKINGYFY/immortalwrt/tar.gz/${SHA}"
+          echo "downloading $URL"
+          curl -fL --retry 5 --retry-delay 5 --retry-all-errors -o src.tar.gz "$URL"
+          ls -lh src.tar.gz
+          SIZE=$(stat -c%s src.tar.gz)
+          if [ "$SIZE" -lt 50000000 ]; then echo "ERR_tarball_too_small $SIZE"; head -c 500 src.tar.gz; exit 1; fi
+          mkdir -p source
+          tar -xzf src.tar.gz -C source --strip-components=1
+          rm -f src.tar.gz
+          echo ==== tree root ====
+          ls source | head -30
+          echo ==== libubox PKG_SOURCE_VERSION (expect a396f38a) ====
+          grep PKG_SOURCE_VERSION source/package/libs/libubox/Makefile || true
+          echo ==== ubus PKG_SOURCE_VERSION (expect db20eff5535f) ====
+          grep PKG_SOURCE_VERSION source/package/system/ubus/Makefile || true
 
-      - name: Install feeds
+      - name: Install feeds (packages + luci only)
         working-directory: source
         run: |
+          printf 'src-git packages https://github.com/immortalwrt/packages.git\nsrc-git luci https://github.com/immortalwrt/luci.git\n' > feeds.conf.default
           ./scripts/feeds update -a
           ./scripts/feeds install -a
+          echo ==== appfilter source ====
+          ls -l package/feeds/packages/open-app-filter 2>/dev/null || echo ERR_no_openappfilter
+          ls -l package/feeds/luci/luci-app-appfilter 2>/dev/null || echo ERR_no_luci_appfilter
+          ls -d package/feeds/luci/luci-i18n-appfilter-zh-cn 2>/dev/null || echo ERR_no_i18n
 
       - name: Generate .config
         working-directory: source
@@ -50,29 +63,36 @@ jobs:
           cp ../config.seed .config
           make defconfig
           echo ==== target ====
-          grep -iE 'jdcloud|qualcommbe' .config | head
+          grep -iE 'CONFIG_TARGET.*(qualcommbe|re-cs-06)' .config | head
           echo ==== OAF modules (expect =m) ====
           grep -iE 'PACKAGE.*(appfilter|oaf)' .config | head -30
           grep -q 'DEVICE_jdcloud_re-cs-06=y' .config || { echo ERR_device_not_selected; exit 1; }
           grep -q 'CONFIG_PACKAGE_appfilter=m' .config || { echo ERR_appfilter_not_m; exit 1; }
           grep -q 'CONFIG_PACKAGE_luci-app-appfilter=m' .config || { echo ERR_luci_not_m; exit 1; }
 
-      - name: Download sources
+      - name: Build OAF packages only
         working-directory: source
-        run: make download -j8
-
-      - name: Build
-        working-directory: source
-        run: make -j2
+        run: |
+          set -o pipefail
+          make -j$(nproc) \
+            package/feeds/packages/open-app-filter/compile \
+            package/feeds/luci/luci-app-appfilter/compile \
+            package/feeds/luci/luci-i18n-appfilter-zh-cn/compile \
+            > ../build.log 2>&1 || { echo "==== BUILD FAILED, tail ===="; tail -n 200 ../build.log; exit 1; }
+          echo ==== last lines ====
+          tail -n 40 ../build.log
+          echo ==== dependency metadata of built appfilter ====
+          find build_dir -path '*appfilter*' -name control -print -exec cat {} \; 2>/dev/null | head -60
 
       - name: Collect OAF packages
         run: |
           mkdir -p artifacts
-          echo ==== package dirs ====
-          find source/bin -maxdepth 4 -type d | head -40
-          find source/bin -type f \( -iname '*appfilter*.apk' -o -iname '*oaf*.apk' -o -iname '*appfilter*.ipk' -o -iname '*oaf*.ipk' \) -exec cp -v {} artifacts/ \;
+          echo ==== bin/packages tree ====
+          find source/bin/packages -maxdepth 3 -type d 2>/dev/null | head -30
+          find source/bin/packages -type f \( -iname '*appfilter*.apk' -o -iname '*appfilter*.ipk' -o -iname '*oaf*.apk' -o -iname '*oaf*.ipk' \) -exec cp -v {} artifacts/ \;
           echo ==== collected ====
           ls -lh artifacts
+          test -n "$(ls -A artifacts)" || { echo ERR_no_artifacts; exit 1; }
 
       - name: Publish release
         uses: softprops/action-gh-release@v2
@@ -82,12 +102,11 @@ jobs:
           body: |
             Compiled from VIKINGYFY/immortalwrt commit 6b5baeb = the exact source of firmware r0-6b5baeb.
             Library ABI matches your firmware: libubox20261103 / libubus20261028 (upstream a396f38a / db20eff5).
-            User-mode packages (kernel-fingerprint independent):
-            - appfilter : backend service + rule DB
+            Packages:
+            - appfilter : backend service + rule DB (userspace)
             - luci-app-appfilter : LuCI web UI
             - luci-i18n-appfilter-zh-cn : Chinese UI
-            - kmod-oaf : kernel module (optional, you already have oaf.ko loaded)
-            You only need appfilter + luci packages since your oaf.ko is already loaded.
+            - kmod-oaf : kernel module (same tree, dependency of appfilter)
           files: artifacts/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
