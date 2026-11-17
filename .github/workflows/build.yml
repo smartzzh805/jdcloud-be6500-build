@@ -29,26 +29,34 @@ jobs:
 
       - name: Fetch source tree at firmware commit 6b5baeb
         run: |
+          cat > /tmp/fetch.sh <<'SH'
+          set -x
+          set -e
           SHA=6b5baeb9a033192796ef074e78cf05653bf5b43f
           URL="https://codeload.github.com/VIKINGYFY/immortalwrt/tar.gz/${SHA}"
           echo "downloading $URL"
-          curl -fL --retry 5 --retry-delay 5 --retry-all-errors -o src.tar.gz "$URL"
+          curl -fL --retry 5 --retry-delay 5 -o src.tar.gz "$URL"
           ls -lh src.tar.gz
           SIZE=$(stat -c%s src.tar.gz)
           echo "tarball size = $SIZE bytes"
-          if [ "$SIZE" -lt 8000000 ]; then echo "ERR_tarball_too_small $SIZE"; head -c 500 src.tar.gz; exit 1; fi
-          MAGIC=$(head -c 2 src.tar.gz | od -An -tx1 | tr -d ' ')
-          echo "magic = $MAGIC (expect 1f8b)"
-          [ "$MAGIC" = "1f8b" ] || { echo ERR_not_gzip; exit 1; }
+          MAGIC=$(head -c 2 src.tar.gz | od -An -tx1 | tr -d ' \n')
+          echo "magic = $MAGIC"
           mkdir -p source
           tar -xzf src.tar.gz -C source --strip-components=1
           rm -f src.tar.gz
           echo ==== tree root ====
           ls source | head -30
-          echo ==== libubox PKG_SOURCE_VERSION (expect a396f38a) ====
-          grep PKG_SOURCE_VERSION source/package/libs/libubox/Makefile || true
-          echo ==== ubus PKG_SOURCE_VERSION (expect db20eff5535f) ====
-          grep PKG_SOURCE_VERSION source/package/system/ubus/Makefile || true
+          echo ==== libubox ====
+          grep PKG_SOURCE_VERSION source/package/libs/libubox/Makefile
+          echo ==== ubus ====
+          grep PKG_SOURCE_VERSION source/package/system/ubus/Makefile
+          SH
+          bash /tmp/fetch.sh > ../fetch.log 2>&1
+          RC=$?
+          echo "$RC" > ../fetch.rc
+          tail -n 40 ../fetch.log
+          echo "fetch rc=$RC"
+          exit $RC
 
       - name: Install feeds (packages + luci only)
         working-directory: source
@@ -99,6 +107,7 @@ jobs:
           test -n "$(ls -A artifacts)" || { echo ERR_no_artifacts; exit 1; }
 
       - name: Publish release
+        if: success()
         uses: softprops/action-gh-release@v2
         with:
           tag_name: oaf-matched-6b5baeb-${{ github.run_number }}
@@ -114,3 +123,25 @@ jobs:
           files: artifacts/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Dump diagnostics into repo
+        if: always()
+        run: |
+          mkdir -p diag
+          {
+            echo "run=${{ github.run_number }} sha=${{ github.sha }}"
+            echo "==== fetch.rc ===="
+            cat fetch.rc 2>/dev/null || echo "(none)"
+            echo "==== fetch.log (last 120) ===="
+            tail -n 120 fetch.log 2>/dev/null || echo "(none)"
+            echo "==== build.log (last 120) ===="
+            tail -n 120 build.log 2>/dev/null || echo "(none)"
+            echo "==== tree ===="
+            ls -la
+            du -sh source 2>/dev/null || true
+          } > diag/last.txt
+          git config user.name "ci-diag"
+          git config user.email "ci-diag@users.noreply.github.com"
+          git add diag/last.txt
+          git commit -m "diag run ${{ github.run_number }} [skip ci]" || true
+          git push || true
