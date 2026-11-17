@@ -1,6 +1,8 @@
 name: Build firmware-matched OAF packages (6b5baeb)
 
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
