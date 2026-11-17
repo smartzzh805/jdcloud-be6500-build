@@ -1,4 +1,4 @@
-run=14 sha=7c6391c32d3809374534deb454206599f24adada
+run=15 sha=e8e40ea7e11ff7e07a2f09e8872c7004cb3ec58f
 ==== fetch.rc ====
 0
 ==== fetch.log (last 120) ====
@@ -9,9 +9,9 @@ downloading https://codeload.github.com/VIKINGYFY/immortalwrt/tar.gz/6b5baeb9a03
 + curl -fL --retry 5 --retry-delay 5 -o src.tar.gz https://codeload.github.com/VIKINGYFY/immortalwrt/tar.gz/6b5baeb9a033192796ef074e78cf05653bf5b43f
   % Total    % Received % Xferd  Average Speed  Time    Time    Time   Current
                                  Dload  Upload  Total   Spent   Left   Speed
-  0      0   0      0   0      0      0      0                              0100  5.76M   0  5.76M   0      0  5.60M      0           00:01          5.61M100 13.79M   0 13.79M   0      0  6.72M      0           00:02          6.72M100 16.97M   0 16.97M   0      0  6.88M      0           00:02          6.72M100 16.97M   0 16.97M   0      0  6.88M      0           00:02          6.72M100 16.97M   0 16.97M   0      0  6.88M      0           00:02          6.72M
+  0      0   0      0   0      0      0      0                              0100  5.25M   0  5.25M   0      0  5.10M      0           00:01          5.11M100 11.50M   0 11.50M   0      0  5.65M      0           00:02          5.65M100 16.97M   0 16.97M   0      0  5.73M      0           00:02          5.65M100 16.97M   0 16.97M   0      0  5.73M      0           00:02          5.65M100 16.97M   0 16.97M   0      0  5.73M      0           00:02          5.65M
 + ls -lh src.tar.gz
--rw-r--r-- 1 runner runner 17M Nov 17 23:45 src.tar.gz
+-rw-r--r-- 1 runner runner 17M Nov 17 23:50 src.tar.gz
 ++ stat -c%s src.tar.gz
 + SIZE=17800423
 + echo 'tarball size = 17800423 bytes'
@@ -55,18 +55,141 @@ PKG_SOURCE_VERSION:=a396f38a8568a1d670c240465cd8d24fdfdf6463
 ==== ubus ====
 + grep PKG_SOURCE_VERSION source/package/system/ubus/Makefile
 PKG_SOURCE_VERSION:=db20eff5535fe3126c05dc0edc029caf0e82fe10
+==== feeds.log (last 120) ====
+Installing package 'luci-app-olsr-viz' from luci
+Installing package 'luci-app-omcproxy' from luci
+Installing package 'luci-app-openclash' from luci
+Installing package 'luci-app-openlist' from luci
+Installing package 'luci-app-openvpn-server' from luci
+Installing package 'luci-app-openwisp' from luci
+Installing package 'luci-app-oscam' from luci
+Installing package 'luci-app-p910nd' from luci
+Installing package 'luci-app-pagekitec' from luci
+Installing package 'luci-app-passwall' from luci
+Installing package 'luci-app-pbr' from luci
+Installing package 'luci-app-pppoe-relay' from luci
+Installing package 'luci-app-pppoe-server' from luci
+Installing package 'luci-app-privoxy' from luci
+Installing package 'luci-app-ps3netsrv' from luci
+Installing package 'luci-app-qbittorrent' from luci
+Installing package 'luci-app-qos-legacy' from luci
+Installing package 'luci-app-qosify' from luci
+Installing package 'luci-app-radicale3' from luci
+Installing package 'rpcd-mod-rad3-enc' from luci
+Installing package 'luci-app-ramfree' from luci
+Installing package 'luci-app-rclone' from luci
+Installing package 'luci-app-rp-pppoe-server' from luci
+Installing package 'luci-app-rtp2httpd' from luci
+Installing package 'luci-app-rustdesk-server' from luci
+Installing package 'luci-app-samba4' from luci
+Installing package 'luci-app-scutclient' from luci
+Installing package 'luci-app-ser2net' from luci
+Installing package 'luci-app-sfp-info' from luci
+Installing package 'luci-app-shunt' from luci
+Installing package 'luci-app-smartdns' from luci
+Installing package 'luci-app-sms-tool-js' from luci
+Installing package 'luci-app-snmpd' from luci
+Installing package 'luci-app-softether' from luci
+Installing package 'luci-app-softethervpn' from luci
+Installing package 'luci-app-spotifyd' from luci
+Installing package 'luci-app-sqm' from luci
+Installing package 'luci-app-squid' from luci
+Installing package 'luci-app-sshtunnel' from luci
+Installing package 'luci-app-statistics' from luci
+Installing package 'luci-app-strongswan-swanctl' from luci
+Installing package 'luci-app-syncdial' from luci
+Installing package 'luci-app-syncthing' from luci
+Installing package 'luci-app-sysuh3c' from luci
+Installing package 'luci-app-tailscale-community' from luci
+Installing package 'luci-app-timewol' from luci
+Installing package 'luci-app-tinyproxy' from luci
+Installing package 'luci-app-tor' from luci
+Installing package 'luci-app-transmission' from luci
+Installing package 'luci-app-travelmate' from luci
+Installing package 'luci-app-ttyd' from luci
+Installing package 'luci-app-ua2f' from luci
+Installing package 'luci-app-udpxy' from luci
+Installing package 'luci-app-uhttpd' from luci
+Installing package 'luci-app-unblockneteasemusic' from luci
+Installing package 'luci-app-unbound' from luci
+Installing package 'luci-app-upnp' from luci
+Installing package 'luci-app-usb-printer' from luci
+Installing package 'luci-app-usteer' from luci
+Installing package 'luci-app-ustreamer' from luci
+Installing package 'luci-app-v2raya' from luci
+Installing package 'luci-app-vlmcsd' from luci
+Installing package 'luci-app-vnstat2' from luci
+Installing package 'luci-app-vsftpd' from luci
+Installing package 'luci-app-watchcat' from luci
+Installing package 'luci-app-wechatpush' from luci
+Installing package 'luci-app-weechat' from luci
+Installing package 'luci-app-wifihistory' from luci
+Installing package 'luci-app-wifischedule' from luci
+Installing package 'luci-app-wol' from luci
+Installing package 'luci-app-xfrpc' from luci
+Installing package 'luci-app-xinetd' from luci
+Installing package 'luci-app-xlnetacc' from luci
+Installing package 'luci-app-zerotier' from luci
+Installing package 'luci-layer2' from luci
+Installing package 'luci-lib-httpclient' from luci
+Installing package 'luci-lib-httpprotoutils' from luci
+Installing package 'luci-lib-ipkg' from luci
+Installing package 'luci-lib-iptparser' from luci
+Installing package 'luci-lib-json' from luci
+Installing package 'luci-mod-battstatus' from luci
+Installing package 'luci-mod-dashboard' from luci
+Installing package 'luci-mod-dsl' from luci
+Installing package 'luci-nginx' from luci
+Installing package 'luci-plugin-2fa' from luci
+Installing package 'luci-plugin-auth-example' from luci
+Installing package 'luci-plugin-csp' from luci
+Installing package 'luci-plugin-examples' from luci
+Installing package 'luci-proto-3g' from luci
+Installing package 'luci-proto-autoip' from luci
+Installing package 'luci-proto-batman-adv' from luci
+Installing package 'luci-proto-external' from luci
+Installing package 'luci-proto-gre' from luci
+Installing package 'luci-proto-hnet' from luci
+Installing package 'luci-proto-ipip' from luci
+Installing package 'luci-proto-mbim' from luci
+Installing package 'luci-proto-minieap' from luci
+Installing package 'luci-proto-modemmanager' from luci
+Installing package 'luci-proto-ncm' from luci
+Installing package 'luci-proto-nebula' from luci
+Installing package 'luci-proto-openconnect' from luci
+Installing package 'luci-proto-openfortivpn' from luci
+Installing package 'luci-proto-openvpn' from luci
+Installing package 'luci-proto-pppossh' from luci
+Installing package 'luci-proto-qmi' from luci
+Installing package 'luci-proto-quectel' from luci
+Installing package 'luci-proto-relay' from luci
+Installing package 'luci-proto-sstp' from luci
+Installing package 'luci-proto-unet' from luci
+Installing package 'luci-proto-vpnc' from luci
+Installing package 'luci-proto-vti' from luci
+Installing package 'luci-proto-vxlan' from luci
+Installing package 'luci-proto-wireguard' from luci
+Installing package 'luci-proto-xfrm' from luci
+Installing package 'luci-proto-yggdrasil' from luci
+Installing package 'luci-ssl' from luci
+Installing package 'luci-ssl-openssl' from luci
+Installing package 'luci-theme-argon' from luci
+Installing package 'luci-theme-footstrap' from luci
+Installing package 'luci-theme-material' from luci
 ==== build.log (last 120) ====
 (none)
 ==== tree ====
-total 40
-drwxr-xr-x  6 runner runner 4096 Nov 17 23:45 .
-drwxr-xr-x  3 runner runner 4096 Nov 17 23:44 ..
-drwxr-xr-x  7 runner runner 4096 Nov 17 23:44 .git
-drwxr-xr-x  3 runner runner 4096 Nov 17 23:44 .github
--rw-r--r--  1 runner runner  496 Nov 17 23:44 README.md
--rw-r--r--  1 runner runner  547 Nov 17 23:44 config.seed
-drwxr-xr-x  2 runner runner 4096 Nov 17 23:44 diag
--rw-r--r--  1 runner runner 2107 Nov 17 23:45 fetch.log
--rw-r--r--  1 runner runner    2 Nov 17 23:45 fetch.rc
-drwxr-xr-x 15 runner runner 4096 Nov 17 23:47 source
+total 260
+drwxr-xr-x  6 runner runner   4096 Nov 17 23:51 .
+drwxr-xr-x  3 runner runner   4096 Nov 17 23:48 ..
+drwxr-xr-x  7 runner runner   4096 Nov 17 23:48 .git
+drwxr-xr-x  3 runner runner   4096 Nov 17 23:48 .github
+-rw-r--r--  1 runner runner    496 Nov 17 23:48 README.md
+-rw-r--r--  1 runner runner    547 Nov 17 23:48 config.seed
+drwxr-xr-x  2 runner runner   4096 Nov 17 23:48 diag
+-rw-r--r--  1 runner runner 219390 Nov 17 23:51 feeds.log
+-rw-r--r--  1 runner runner      2 Nov 17 23:51 feeds.rc
+-rw-r--r--  1 runner runner   2107 Nov 17 23:50 fetch.log
+-rw-r--r--  1 runner runner      2 Nov 17 23:50 fetch.rc
+drwxr-xr-x 15 runner runner   4096 Nov 17 23:52 source
 500M	source
