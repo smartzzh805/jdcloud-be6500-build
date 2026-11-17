@@ -29,9 +29,12 @@ jobs:
 
       - name: Clone source at firmware commit 6b5baeb
         run: |
-          git clone --filter=blob:none https://github.com/VIKINGYFY/immortalwrt.git source
-          cd source
-          git checkout 6b5baeb9a033192796ef074e78cf05653bf5b43f
+          SHA=6b5baeb9a033192796ef074e78cf05653bf5b43f
+          mkdir source && cd source
+          git init
+          git remote add origin https://github.com/VIKINGYFY/immortalwrt.git
+          git fetch --depth 1 origin $SHA
+          git checkout FETCH_HEAD
           echo ==== HEAD ====
           git rev-parse HEAD
           echo ==== libubox upstream commit (expect a396f38a) ====
