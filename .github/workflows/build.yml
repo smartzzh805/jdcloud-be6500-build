@@ -58,16 +58,18 @@ jobs:
           echo "fetch rc=$RC"
           exit $RC
 
-      - name: Install feeds (packages + luci only)
+      - name: Install feeds (only what OAF needs)
         working-directory: source
         run: |
           printf 'src-git packages https://github.com/immortalwrt/packages.git\nsrc-git luci https://github.com/immortalwrt/luci.git\n' > feeds.conf.default
-          ( ./scripts/feeds update -a && ./scripts/feeds install -a ) > ../feeds.log 2>&1
+          ( ./scripts/feeds update -a && ./scripts/feeds install luci luci-app-appfilter luci-i18n-appfilter-zh-cn appfilter ) > ../feeds.log 2>&1
           RC=$?
           tail -n 40 ../feeds.log
           echo "feeds rc=$RC"
           echo "$RC" > ../feeds.rc
-          [ "$RC" = "0" ] || exit $RC
+          [ "$RC" = "0" ] || { echo ERR_feeds; exit $RC; }
+          echo ==== installed feed dirs ====
+          ls package/feeds/packages | head
           echo ==== appfilter source ====
           ls -l package/feeds/packages/open-app-filter 2>/dev/null || echo ERR_no_openappfilter
           ls -l package/feeds/luci/luci-app-appfilter 2>/dev/null || echo ERR_no_luci_appfilter
@@ -83,7 +85,6 @@ jobs:
           tail -n 80 ../defconfig.log
           echo "defconfig rc=$RC"
           echo "$RC" > ../defconfig.rc
-          [ "$RC" = "0" ] || exit $RC
           echo ==== target ====
           grep -iE 'CONFIG_TARGET.*(qualcommbe|re-cs-06)' .config | head
           echo ==== OAF modules (expect =m) ====
@@ -91,6 +92,7 @@ jobs:
           grep -q 'DEVICE_jdcloud_re-cs-06=y' .config || { echo ERR_device_not_selected; exit 1; }
           grep -q 'CONFIG_PACKAGE_appfilter=m' .config || { echo ERR_appfilter_not_m; exit 1; }
           grep -q 'CONFIG_PACKAGE_luci-app-appfilter=m' .config || { echo ERR_luci_not_m; exit 1; }
+          echo OK_config_complete
 
       - name: Build OAF packages only
         working-directory: source
