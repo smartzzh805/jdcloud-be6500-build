@@ -1,8 +1,6 @@
 name: Build firmware-matched OAF packages (6b5baeb)
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -68,8 +66,8 @@ jobs:
         run: |
           mkdir -p artifacts
           echo ==== package dirs ====
-          find source/bin -maxdepth 4 -type d | head -30
-          find source/bin -type f \( -iname '*appfilter*.apk' -o -iname '*oaf*.apk' -o -iname '*appfilter*.ipk' -o -iname '*oaf*.ipk' \) -exec cp -v {} \; artifacts/
+          find source/bin -maxdepth 4 -type d | head -40
+          find source/bin -type f \( -iname '*appfilter*.apk' -o -iname '*oaf*.apk' -o -iname '*appfilter*.ipk' -o -iname '*oaf*.ipk' \) -exec cp -v {} artifacts/ \;
           echo ==== collected ====
           ls -lh artifacts
 
