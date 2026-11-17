@@ -77,7 +77,13 @@ jobs:
         working-directory: source
         run: |
           cp ../config.seed .config
-          make defconfig
+          sed -i 's/\r$//' .config
+          make defconfig > ../defconfig.log 2>&1
+          RC=$?
+          tail -n 80 ../defconfig.log
+          echo "defconfig rc=$RC"
+          echo "$RC" > ../defconfig.rc
+          [ "$RC" = "0" ] || exit $RC
           echo ==== target ====
           grep -iE 'CONFIG_TARGET.*(qualcommbe|re-cs-06)' .config | head
           echo ==== OAF modules (expect =m) ====
@@ -140,6 +146,8 @@ jobs:
             tail -n 120 fetch.log 2>/dev/null || echo "(none)"
             echo "==== feeds.log (last 120) ===="
             tail -n 120 feeds.log 2>/dev/null || echo "(none)"
+            echo "==== defconfig.log (last 120) ===="
+            tail -n 120 defconfig.log 2>/dev/null || echo "(none)"
             echo "==== build.log (last 120) ===="
             tail -n 120 build.log 2>/dev/null || echo "(none)"
             echo "==== tree ===="
