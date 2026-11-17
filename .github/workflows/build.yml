@@ -45,6 +45,11 @@ jobs:
           make defconfig
           echo "---- selected target / device ----"
           grep -iE 'jdcloud|re.cs.06|qualcommbe' .config | head -40
+          echo "---- OAF plugin check ----"
+          grep -iE 'appfilter|kmod-oaf' .config | head -40
+          echo "---- sanity: abort if device or OAF missing ----"
+          grep -q 'DEVICE_jdcloud_re-cs-06=y' .config || { echo "ERROR: device not selected"; exit 1; }
+          grep -q 'CONFIG_PACKAGE_luci-app-appfilter=y' .config || { echo "ERROR: OAF not selected"; exit 1; }
 
       - name: Download sources
         working-directory: source
@@ -66,10 +71,11 @@ jobs:
       - name: Publish release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: be6500-${{ github.run_number }}
-          name: JDCloud BE6500 (RE-CS-06) build ${{ github.run_number }}
+          tag_name: be6500-oaf-${{ github.run_number }}
+          name: JDCloud BE6500 (RE-CS-06) + OpenAppFilter build ${{ github.run_number }}
           body: |
             ImmortalWrt owrt / qualcommbe / ipq53xx / jdcloud_re-cs-06
+            Includes OpenAppFilter (OAF) via luci-app-appfilter + appfilter + kmod-oaf, with Simplified Chinese UI.
             Built by GitHub Actions, run ${{ github.run_number }}.
 
             WARNING: third-party U-Boot (p14/p15, clear p3/p4 BOOTCONFIG) is required
