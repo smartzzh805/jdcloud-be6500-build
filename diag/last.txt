@@ -1,4 +1,4 @@
-run=15 sha=e8e40ea7e11ff7e07a2f09e8872c7004cb3ec58f
+run=16 sha=4a8ff15da566f6a346ce34dc6302c3a2586901e6
 ==== fetch.rc ====
 0
 ==== fetch.log (last 120) ====
@@ -9,9 +9,9 @@ downloading https://codeload.github.com/VIKINGYFY/immortalwrt/tar.gz/6b5baeb9a03
 + curl -fL --retry 5 --retry-delay 5 -o src.tar.gz https://codeload.github.com/VIKINGYFY/immortalwrt/tar.gz/6b5baeb9a033192796ef074e78cf05653bf5b43f
   % Total    % Received % Xferd  Average Speed  Time    Time    Time   Current
                                  Dload  Upload  Total   Spent   Left   Speed
-  0      0   0      0   0      0      0      0                              0100  5.25M   0  5.25M   0      0  5.10M      0           00:01          5.11M100 11.50M   0 11.50M   0      0  5.65M      0           00:02          5.65M100 16.97M   0 16.97M   0      0  5.73M      0           00:02          5.65M100 16.97M   0 16.97M   0      0  5.73M      0           00:02          5.65M100 16.97M   0 16.97M   0      0  5.73M      0           00:02          5.65M
+  0      0   0      0   0      0      0      0                              0100  7.00M   0  7.00M   0      0  6.93M      0           00:01          6.93M100 15.09M   0 15.09M   0      0  7.45M      0           00:02          7.46M100 16.97M   0 16.97M   0      0  7.53M      0           00:02          7.46M100 16.97M   0 16.97M   0      0  7.53M      0           00:02          7.46M100 16.97M   0 16.97M   0      0  7.53M      0           00:02          7.46M
 + ls -lh src.tar.gz
--rw-r--r-- 1 runner runner 17M Nov 17 23:50 src.tar.gz
+-rw-r--r-- 1 runner runner 17M Nov 17 23:54 src.tar.gz
 ++ stat -c%s src.tar.gz
 + SIZE=17800423
 + echo 'tarball size = 17800423 bytes'
@@ -176,20 +176,43 @@ Installing package 'luci-ssl-openssl' from luci
 Installing package 'luci-theme-argon' from luci
 Installing package 'luci-theme-footstrap' from luci
 Installing package 'luci-theme-material' from luci
+==== defconfig.log (last 120) ====
+
+WARNING: Makefile 'package/feeds/packages/gst1-plugins-base/Makefile' has a dependency on 'libmesa', which does not exist
+WARNING: Makefile 'package/feeds/packages/gst1-plugins-base/Makefile' has a dependency on 'libwayland', which does not exist
+WARNING: Makefile 'package/feeds/packages/gst1-plugins-base/Makefile' has a dependency on 'libgraphene', which does not exist
+tmp/.config-package.in:119625:error: recursive dependency detected!
+tmp/.config-package.in:119625:	symbol PACKAGE_fwknopd is selected by PACKAGE_luci-app-fwknopd
+tmp/.config-package.in:77678:	symbol PACKAGE_luci-app-fwknopd depends on FWKNOPD_GPG
+feeds/packages/net/fwknop/Config.in:5:	symbol FWKNOPD_GPG depends on PACKAGE_fwknopd
+For a resolution refer to Documentation/kbuild/kconfig-language.rst
+subsection "Kconfig recursive dependency limitations"
+
+tmp/.config-package.in:140025:error: recursive dependency detected!
+tmp/.config-package.in:140025:	symbol PACKAGE_squeezelite-custom depends on SQUEEZELITE_WMA_ALAC
+tmp/.config-package.in:140115:	symbol SQUEEZELITE_WMA_ALAC depends on PACKAGE_squeezelite-custom
+For a resolution refer to Documentation/kbuild/kconfig-language.rst
+subsection "Kconfig recursive dependency limitations"
+
+#
+# configuration written to .config
+#
 ==== build.log (last 120) ====
 (none)
 ==== tree ====
-total 260
-drwxr-xr-x  6 runner runner   4096 Nov 17 23:51 .
-drwxr-xr-x  3 runner runner   4096 Nov 17 23:48 ..
-drwxr-xr-x  7 runner runner   4096 Nov 17 23:48 .git
-drwxr-xr-x  3 runner runner   4096 Nov 17 23:48 .github
--rw-r--r--  1 runner runner    496 Nov 17 23:48 README.md
--rw-r--r--  1 runner runner    547 Nov 17 23:48 config.seed
-drwxr-xr-x  2 runner runner   4096 Nov 17 23:48 diag
--rw-r--r--  1 runner runner 219390 Nov 17 23:51 feeds.log
--rw-r--r--  1 runner runner      2 Nov 17 23:51 feeds.rc
--rw-r--r--  1 runner runner   2107 Nov 17 23:50 fetch.log
--rw-r--r--  1 runner runner      2 Nov 17 23:50 fetch.rc
-drwxr-xr-x 15 runner runner   4096 Nov 17 23:52 source
+total 268
+drwxr-xr-x  6 runner runner   4096 Nov 17 23:56 .
+drwxr-xr-x  3 runner runner   4096 Nov 17 23:53 ..
+drwxr-xr-x  7 runner runner   4096 Nov 17 23:53 .git
+drwxr-xr-x  3 runner runner   4096 Nov 17 23:53 .github
+-rw-r--r--  1 runner runner    496 Nov 17 23:53 README.md
+-rw-r--r--  1 runner runner    547 Nov 17 23:53 config.seed
+-rw-r--r--  1 runner runner   1253 Nov 17 23:56 defconfig.log
+-rw-r--r--  1 runner runner      2 Nov 17 23:56 defconfig.rc
+drwxr-xr-x  2 runner runner   4096 Nov 17 23:53 diag
+-rw-r--r--  1 runner runner 218525 Nov 17 23:55 feeds.log
+-rw-r--r--  1 runner runner      2 Nov 17 23:55 feeds.rc
+-rw-r--r--  1 runner runner   2107 Nov 17 23:54 fetch.log
+-rw-r--r--  1 runner runner      2 Nov 17 23:54 fetch.rc
+drwxr-xr-x 15 runner runner   4096 Nov 17 23:56 source
 500M	source
