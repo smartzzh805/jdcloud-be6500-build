@@ -1,6 +1,21 @@
-# OAF patch appended after official full-firmware config
-# Base set from VIKINGYFY/OpenWRT-CI: IPQ53XX.txt + GENERAL.txt + Packages.sh + Settings.sh (Vantage)
-# OAF upstream destan19/OpenAppFilter, packaged by ImmortalWrt feed
+# ============================================================================
+# 追加补丁 —— 复刻 VIKINGYFY OpenWRT-CI 全家桶固件后，在其配置末尾追加本文件
+# 基础包集合来自官方: Config/IPQ53XX.txt + Config/GENERAL.txt + Packages.sh + Settings.sh(Vantage)
+# 本补丁额外追加: OAF 上网行为管理 + IPTV + 去广告
+# ============================================================================
+
+# --- 上网行为管理 OAF (源码 destan19/OpenAppFilter, 由 ImmortalWrt feed 打包) ---
 CONFIG_PACKAGE_luci-app-appfilter=y
 CONFIG_PACKAGE_appfilter=y
 CONFIG_PACKAGE_kmod-oaf=y
+
+# --- IPTV: udpxy 组播转单播 + igmpproxy IGMP 代理 (immortalwrt 官方 feed) ---
+CONFIG_PACKAGE_luci-app-udpxy=y
+CONFIG_PACKAGE_udpxy=y
+CONFIG_PACKAGE_igmpproxy=y
+
+# --- 去广告: AdGuard Home (DNS 级全网络去广告) + Adblock (轻量 DNS 黑名单) ---
+CONFIG_PACKAGE_luci-app-adguardhome=y
+CONFIG_PACKAGE_adguardhome=y
+CONFIG_PACKAGE_luci-app-adblock=y
+CONFIG_PACKAGE_adblock=y
