@@ -107,7 +107,7 @@ jobs:
           make -j$(nproc) \
             package/feeds/packages/open-app-filter/compile \
             package/feeds/luci/luci-app-appfilter/compile \
-            > ../build.log 2>&1 || { echo "==== BUILD FAILED, tail ===="; tail -n 120 ../build.log; echo "==== error lines ===="; grep -inE '(error|fatal|failed|cannot find|No such file)' ../build.log | tail -n 80; make -j1 V=s package/utils/lua/host-compile > ../lua_verbose.log 2>&1 || true; tail -n 80 ../lua_verbose.log; exit 1; }
+            > ../build.log 2>&1 || { echo "==== BUILD FAILED, tail ===="; tail -n 120 ../build.log; echo "==== error lines ===="; grep -inE '(error|fatal|failed|cannot find|No such file)' ../build.log | tail -n 80; echo "==== verbose rebuild ===="; make -j1 V=s package/feeds/packages/open-app-filter/compile > ../lua_verbose.log 2>&1 || true; echo "==== verbose errors ===="; grep -inE '(error|fatal|failed|cannot find|No such file)' ../lua_verbose.log | tail -n 120; echo "==== verbose tail ===="; tail -n 150 ../lua_verbose.log; exit 1; }
           echo ==== core build done ====
           tail -n 20 ../build.log
           make -j$(nproc) package/feeds/luci/luci-i18n-appfilter-zh-cn/compile >> ../build.log 2>&1 || echo WARN_i18n_skipped
@@ -160,8 +160,8 @@ jobs:
             tail -n 60 defconfig.log 2>/dev/null || echo "(none)"
             echo "==== build.log (last 150) ===="
             tail -n 150 build.log 2>/dev/null || echo "(none)"
-            echo "==== lua_verbose.log (last 100) ===="
-            tail -n 100 lua_verbose.log 2>/dev/null || echo "(none)"
+            echo "==== lua_verbose.log (last 200) ===="
+            tail -n 200 lua_verbose.log 2>/dev/null || echo "(none)"
             echo "==== tree ===="
             ls -la
             du -sh source 2>/dev/null || true
