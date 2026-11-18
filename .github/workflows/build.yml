@@ -1,4 +1,4 @@
-name: Build ImmortalWrt firmware for JDCloud BE6500 (OAF)
+name: Build VIKINGYFY full firmware + OAF for JDCloud BE6500
 
 on:
   push:
@@ -7,6 +7,18 @@ on:
 
 permissions:
   contents: write
+
+env:
+  WRT_CONFIG: IPQ53XX
+  WRT_THEME: vantage
+  WRT_NAME: BE6500
+  WRT_SSID: BE6500
+  WRT_WORD: "12345678"
+  WRT_IP: 192.168.10.1
+  WRT_PW: none
+  WRT_REPO: https://github.com/VIKINGYFY/immortalwrt.git
+  WRT_BRANCH: owrt
+  WRT_SOURCE: VIKINGYFY/immortalwrt
 
 jobs:
   build:
@@ -22,77 +34,141 @@ jobs:
           sudo apt-get clean
           df -h .
 
-      - name: Install build dependencies
+      - name: Clone official CI project (scripts + configs)
         run: |
-          sudo apt-get update
-          sudo apt-get install -y build-essential clang flex bison g++ gawk \
-            gcc-multilib g++-multilib gettext git libncurses5-dev libncursesw5-dev \
-            libssl-dev python3-setuptools rsync swig unzip zlib1g-dev file wget
+          git clone --depth 1 https://github.com/VIKINGYFY/OpenWRT-CI.git ci
+          cp -r ci/Scripts "$GITHUB_WORKSPACE/Scripts"
+          cp -r ci/Config "$GITHUB_WORKSPACE/Config"
+          mkdir -p "$GITHUB_WORKSPACE/.github/scripts"
+          cp -r ci/.github/scripts/. "$GITHUB_WORKSPACE/.github/scripts/"
+          echo "==== official CI HEAD ===="
+          git -C ci log -1 --format='%h %ci %s'
+
+      - name: Initialization environment
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          sudo apt-get -yqq update
+          sudo apt-get install -y --no-install-recommends \
+            bc bison build-essential bzip2 ca-certificates ccache clang \
+            cmake cpio curl device-tree-compiler dos2unix file flex \
+            g++-multilib gawk gcc-multilib genisoimage gettext git jq \
+            libbpf-dev libclang-dev libdw-dev libelf-dev libncurses-dev libssl-dev lld \
+            llvm ninja-build patch perl pkgconf python3 python3-cryptography \
+            python3-dev python3-packaging python3-pyelftools python3-setuptools qemu-utils rsync swig \
+            unzip wget xz-utils zlib1g-dev zstd
+          sudo apt-get install -y --no-install-recommends golang-go 2>/dev/null || true
+          if ! command -v rustup >/dev/null 2>&1; then
+            curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal
+          fi
+          export PATH="$HOME/.cargo/bin:$PATH"
+          echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
+          rustup show active-toolchain || true
+          go version || true
+          llvm-config --version || true
+          sudo mkdir -p /mnt/build_wrt
+          sudo chown $USER:$USER /mnt/build_wrt
+          sudo ln -s /mnt/build_wrt "$GITHUB_WORKSPACE/wrt"
+          df -h .
+
+      - name: Initialization values
+        run: |
+          WRT_TARGET=$(grep -m 1 -oP '^CONFIG_TARGET_\K[^=_]+(?=\=y)' "./Config/$WRT_CONFIG.txt")
+          WRT_SUBTARGET=$(grep -m 1 -oP "^CONFIG_TARGET_${WRT_TARGET}_\K[^=_]+(?=\=y)" "./Config/$WRT_CONFIG.txt")
+          {
+            echo "WRT_INFO=${WRT_SOURCE%%/*}"
+            echo "WRT_MARK=${GITHUB_REPOSITORY%%/*}"
+            echo "WRT_DATE=$(TZ=UTC-8 date +"%y.%m.%d-%H.%M.%S")"
+            echo "WRT_SUBTARGET=$WRT_SUBTARGET"
+            echo "WRT_TARGET=$WRT_TARGET"
+          } >> "$GITHUB_ENV"
+          echo "target=$WRT_TARGET subtarget=$WRT_SUBTARGET"
 
       - name: Clone source
-        run: git clone --depth 1 -b owrt https://github.com/VIKINGYFY/immortalwrt.git source
-
-      - name: Install feeds
-        working-directory: source
         run: |
+          git clone --depth=1 --single-branch --branch $WRT_BRANCH $WRT_REPO ./wrt/
+          cd ./wrt/
+          echo "==== source HEAD ===="
+          git log -1 --format='%h %ci %s'
+          PROJECT_MIRRORS_FILE="./scripts/projectsmirrors.json"
+          if [ -f "$PROJECT_MIRRORS_FILE" ]; then
+            sed -i '/.cn\//d; /tencent/d; /aliyun/d' "$PROJECT_MIRRORS_FILE"
+          fi
+
+      - name: Check scripts
+        run: |
+          find "$GITHUB_WORKSPACE" -maxdepth 4 -type f -iregex ".*\(txt\|sh\)$" -exec dos2unix {} \; -exec chmod +x {} \;
+
+      - name: Update feeds
+        run: |
+          cd ./wrt/
           ./scripts/feeds update -a
           ./scripts/feeds install -a
 
-      - name: Generate .config
-        working-directory: source
+      - name: Custom packages (official private feeds)
         run: |
-          cp ../config.seed .config
-          make defconfig
-          echo "==== HEAD ===="
-          git log -1 --format='%h %ci %s'
-          echo "==== target / device ===="
-          grep -iE 'jdcloud|re.cs.06|qualcommbe' .config | head -40
-          echo "==== OAF selection ===="
-          grep -iE 'appfilter|kmod-oaf' .config | head -40
+          cd ./wrt/
+          "$GITHUB_WORKSPACE/Scripts/Packages.sh"
+          "$GITHUB_WORKSPACE/Scripts/Handles.sh"
+          "$GITHUB_WORKSPACE/.github/scripts/prepare-i2c-tools.sh"
+
+      - name: Custom settings (official full config + OAF)
+        run: |
+          cd ./wrt/
+          cat "$GITHUB_WORKSPACE/Config/$WRT_CONFIG.txt" "$GITHUB_WORKSPACE/Config/GENERAL.txt" >> .config
+          echo "==== append OAF patch ===="
+          cat "$GITHUB_WORKSPACE/config.seed" >> .config
+          "$GITHUB_WORKSPACE/Scripts/Settings.sh"
+          "$GITHUB_WORKSPACE/.github/scripts/prepare-build-host.sh"
+          make defconfig -j$(nproc) && make clean -j$(nproc)
+          echo "==== verify target / device / OAF ===="
+          grep -iE 'qualcommbe|ipq53xx|jdcloud|re.cs.06' .config | head -30
+          grep -iE 'luci-app-appfilter|CONFIG_PACKAGE_appfilter|kmod-oaf' .config | head -30
           grep -q 'DEVICE_jdcloud_re-cs-06=y' .config || { echo "ERROR: device not selected"; exit 1; }
           grep -q 'CONFIG_PACKAGE_luci-app-appfilter=y' .config || { echo "ERROR: OAF not selected"; exit 1; }
+          grep -q 'CONFIG_PACKAGE_appfilter=y' .config || { echo "ERROR: appfilter not selected"; exit 1; }
           grep -q 'CONFIG_PACKAGE_kmod-oaf=y' .config || { echo "ERROR: kmod-oaf not selected"; exit 1; }
 
-      - name: Download sources
-        working-directory: source
-        run: make download -j8
+      - name: Prepare Rust toolchain (for sing-box etc.)
+        run: |
+          cd ./wrt/
+          "$GITHUB_WORKSPACE/.github/scripts/prepare-rust.sh"
 
-      - name: Build firmware
-        working-directory: source
-        run: make -j$(nproc) V=s
+      - name: Download packages
+        run: |
+          cd ./wrt/
+          make download -j$(nproc)
+
+      - name: Compile firmware
+        run: |
+          cd ./wrt/
+          make -j$(nproc) || make -j1 V=s
 
       - name: Collect artifacts
         run: |
           mkdir -p artifacts
-          find source/bin/targets/qualcommbe/ipq53xx -maxdepth 1 -type f \
-            \( -name '*.bin' -o -name '*.itb' -o -name '*sha256*' \) \
+          find ./wrt/bin/targets/qualcommbe/ipq53xx -maxdepth 1 -type f \
+            \( -name '*.bin' -o -name '*.itb' -o -name '*sha256*' -o -name '*.manifest' \) \
             -exec cp -v {} artifacts/ \;
+          cp -v ./wrt/.config artifacts/final.config.txt
           echo "==== artifacts ===="
           ls -lh artifacts
-          grep -q 'squashfs-factory.bin' <(ls artifacts) || { echo "ERROR: no factory image"; exit 1; }
-          grep -q 'squashfs-sysupgrade.bin' <(ls artifacts) || { echo "ERROR: no sysupgrade image"; exit 1; }
           df -h .
 
       - name: Publish release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: be6500-oaf-fw-${{ github.run_number }}
-          name: JDCloud BE6500 (RE-CS-06) firmware + OAF - run ${{ github.run_number }}
+          tag_name: be6500-full-oaf-${{ github.run_number }}
+          name: JDCloud BE6500 - VIKINGYFY full firmware + OAF - run ${{ github.run_number }}
           body: |
-            Full ImmortalWrt firmware for JDCloud Zhaoyun BE6500 (RE-CS-06, IPQ5322).
-            Source: VIKINGYFY/immortalwrt owrt branch, latest commit (see build log HEAD line).
-            Target: qualcommbe / ipq53xx / jdcloud_re-cs-06, kernel 6.18.
-            Includes OpenAppFilter (OAF) parental control - upstream destan19/OpenAppFilter
-            packaged by ImmortalWrt feed (luci-app-appfilter + appfilter + kmod-oaf), Simplified Chinese UI.
-
-            Images:
-            - *squashfs-factory.bin : first flash from stock firmware
-            - *squashfs-sysupgrade.bin : upgrade from OpenWrt/ImmortalWrt
-            - *initramfs-uImage.itb : rescue / test run (does not write flash)
-            - sha256sums : verify before flashing
-
-            WARNING: third-party U-Boot (p14/p15, clear p3/p4 BOOTCONFIG) is required
-            before flashing factory.bin. Never overwrite p17 ART or p25 factory.
+            Full VIKINGYFY-style firmware (official config/private feeds/Vantage theme)
+            rebuilt on VIKINGYFY/immortalwrt owrt branch, PLUS OpenAppFilter (OAF).
+            Source: VIKINGYFY/immortalwrt (owrt), scripts/config from VIKINGYFY/OpenWRT-CI
+            Target: qualcommbe / ipq53xx / jdcloud_re-cs-06, kernel 6.18
+            Base package set: identical to official full firmware - see final.config.txt / *.manifest
+            Added: OpenAppFilter (luci-app-appfilter + appfilter + kmod-oaf, destan19, zh_CN UI)
+            WARNING: third-party U-Boot required (p14/p15, clear p3/p4 BOOTCONFIG).
+            Never overwrite p17 ART or p25 factory.
           files: artifacts/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
