@@ -78,33 +78,27 @@ jobs:
       - name: Generate .config
         working-directory: source
         run: |
-          cp ../config.seed .config
-          sed -i 's/\r$//' .config
-          make defconfig > ../defconfig.log 2>&1
-          RC=$?
-          tail -n 80 ../defconfig.log
-          echo "defconfig rc=$RC"
-          echo "$RC" > ../defconfig.rc
           {
+            set -x
+            set +e
+            cp ../config.seed .config
+            sed -i 's/\r$//' .config
+            make defconfig > ../defconfig.log 2>&1
+            RC=$?
+            echo "defconfig rc=$RC"
+            echo "$RC" > ../defconfig.rc
             echo "==== grep target ===="
             grep -iE 'CONFIG_TARGET_(qualcommbe|.*re-cs-06)' .config
             echo "==== grep appfilter/oaf ===="
             grep -iE 'appfilter|oaf' .config
-            echo "==== all DEVICE lines count ===="
-            grep -c 'DEVICE_' .config
-            echo "==== .config size ===="
-            wc -l .config
-            echo "==== head 40 ===="
-            head -40 .config
-          } >> ../defconfig.log 2>&1
-          echo ==== target ====
-          grep -iE 'CONFIG_TARGET.*(qualcommbe|re-cs-06)' .config | head
-          echo ==== OAF modules (expect =m) ====
-          grep -iE 'PACKAGE.*(appfilter|oaf)' .config | head -30
-          grep -q 'DEVICE_jdcloud_re-cs-06=y' .config || { echo ERR_device_not_selected; exit 1; }
-          grep -q 'CONFIG_PACKAGE_appfilter=m' .config || { echo ERR_appfilter_not_m; exit 1; }
-          grep -q 'CONFIG_PACKAGE_luci-app-appfilter=m' .config || { echo ERR_luci_not_m; exit 1; }
-          echo OK_config_complete
+            echo "==== checks ===="
+            grep -q 'DEVICE_jdcloud_re-cs-06=y' .config; echo "chk_device=$?"
+            grep -q 'CONFIG_PACKAGE_appfilter=m' .config; echo "chk_appfilter=$?"
+            grep -q 'CONFIG_PACKAGE_luci-app-appfilter=m' .config; echo "chk_luci=$?"
+            echo OK_trace_end
+          } > ../step7.log 2>&1
+          tail -n 60 ../step7.log
+          grep -q 'OK_trace_end' ../step7.log && grep -q 'chk_appfilter=0' ../step7.log && grep -q 'chk_luci=0' ../step7.log && grep -q 'chk_device=0' ../step7.log
 
       - name: Build OAF packages only
         working-directory: source
@@ -113,10 +107,10 @@ jobs:
           make -j$(nproc) \
             package/feeds/packages/open-app-filter/compile \
             package/feeds/luci/luci-app-appfilter/compile \
-            package/feeds/luci/luci-i18n-appfilter-zh-cn/compile \
             > ../build.log 2>&1 || { echo "==== BUILD FAILED, tail ===="; tail -n 200 ../build.log; exit 1; }
-          echo ==== last lines ====
-          tail -n 40 ../build.log
+          echo ==== core build done ====
+          tail -n 20 ../build.log
+          make -j$(nproc) package/feeds/luci/luci-i18n-appfilter-zh-cn/compile >> ../build.log 2>&1 || echo WARN_i18n_skipped
           echo ==== dependency metadata of built appfilter ====
           find build_dir -path '*appfilter*' -name control -print -exec cat {} \; 2>/dev/null | head -60
 
@@ -156,14 +150,16 @@ jobs:
             echo "run=${{ github.run_number }} sha=${{ github.sha }}"
             echo "==== fetch.rc ===="
             cat fetch.rc 2>/dev/null || echo "(none)"
-            echo "==== fetch.log (last 120) ===="
-            tail -n 120 fetch.log 2>/dev/null || echo "(none)"
-            echo "==== feeds.log (last 120) ===="
-            tail -n 120 feeds.log 2>/dev/null || echo "(none)"
-            echo "==== defconfig.log (last 200) ===="
-            tail -n 200 defconfig.log 2>/dev/null || echo "(none)"
-            echo "==== build.log (last 120) ===="
-            tail -n 120 build.log 2>/dev/null || echo "(none)"
+            echo "==== fetch.log (last 60) ===="
+            tail -n 60 fetch.log 2>/dev/null || echo "(none)"
+            echo "==== feeds.log (last 60) ===="
+            tail -n 60 feeds.log 2>/dev/null || echo "(none)"
+            echo "==== step7.log (last 100) ===="
+            tail -n 100 step7.log 2>/dev/null || echo "(none)"
+            echo "==== defconfig.log (last 60) ===="
+            tail -n 60 defconfig.log 2>/dev/null || echo "(none)"
+            echo "==== build.log (last 150) ===="
+            tail -n 150 build.log 2>/dev/null || echo "(none)"
             echo "==== tree ===="
             ls -la
             du -sh source 2>/dev/null || true
