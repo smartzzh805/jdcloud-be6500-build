@@ -1,4 +1,4 @@
-run=20 sha=6876b08197dd53b4260b0fe00478485b8dad4314
+run=21 sha=8df6508a433c8d01b81abe681b85074fdff19935
 ==== fetch.rc ====
 0
 ==== fetch.log (last 60) ====
@@ -9,9 +9,9 @@ downloading https://codeload.github.com/VIKINGYFY/immortalwrt/tar.gz/6b5baeb9a03
 + curl -fL --retry 5 --retry-delay 5 -o src.tar.gz https://codeload.github.com/VIKINGYFY/immortalwrt/tar.gz/6b5baeb9a033192796ef074e78cf05653bf5b43f
   % Total    % Received % Xferd  Average Speed  Time    Time    Time   Current
                                  Dload  Upload  Total   Spent   Left   Speed
-  0      0   0      0   0      0      0      0                              0100  6.34M   0  6.34M   0      0  6.16M      0           00:01          6.16M100 13.80M   0 13.80M   0      0  6.78M      0           00:02          6.79M100 16.97M   0 16.97M   0      0  6.94M      0           00:02          6.79M100 16.97M   0 16.97M   0      0  6.94M      0           00:02          6.79M100 16.97M   0 16.97M   0      0  6.94M      0           00:02          6.79M
+  0      0   0      0   0      0      0      0                              0100  6.00M   0  6.00M   0      0  5.87M      0           00:01          5.88M100 14.00M   0 14.00M   0      0  6.88M      0           00:02          6.88M100 16.97M   0 16.97M   0      0  6.96M      0           00:02          6.88M100 16.97M   0 16.97M   0      0  6.96M      0           00:02          6.88M100 16.97M   0 16.97M   0      0  6.96M      0           00:02          6.88M
 + ls -lh src.tar.gz
--rw-r--r-- 1 runner runner 17M Nov 18 01:09 src.tar.gz
+-rw-r--r-- 1 runner runner 17M Nov 18 01:15 src.tar.gz
 ++ stat -c%s src.tar.gz
 + SIZE=17800423
 + echo 'tarball size = 17800423 bytes'
@@ -198,37 +198,52 @@ make[6]: Entering directory '/home/runner/work/jdcloud-be6500-build/jdcloud-be65
 make[6]: Leaving directory '/home/runner/work/jdcloud-be6500-build/jdcloud-be6500-build/source/target/linux/qualcommbe/image'
 make[5]: Leaving directory '/home/runner/work/jdcloud-be6500-build/jdcloud-be6500-build/source/target/linux/qualcommbe'
 make[4]: Leaving directory '/home/runner/work/jdcloud-be6500-build/jdcloud-be6500-build/source/target/linux'
-time: target/linux/prereq#0.05#0.09#0.12
+time: target/linux/prereq#0.05#0.09#0.13
  make[1] package/feeds/packages/open-app-filter/compile
  make[2] -C package/utils/lua host-compile
     ERROR: package/utils/lua [host] failed to build.
 make -r package/feeds/packages/open-app-filter/compile: build failed. Please re-run make with -j1 V=s or V=sc for a higher verbosity level to see what's going on
 make: *** [/home/runner/work/jdcloud-be6500-build/jdcloud-be6500-build/source/include/toplevel.mk:272: package/feeds/packages/open-app-filter/compile] Error 1
-==== lua_verbose.log (last 100) ====
+==== lua_verbose.log (last 200) ====
 make[2]: Entering directory '/home/runner/work/jdcloud-be6500-build/jdcloud-be6500-build/source/scripts/config'
 make[2]: 'conf' is up to date.
 make[2]: Leaving directory '/home/runner/work/jdcloud-be6500-build/jdcloud-be6500-build/source/scripts/config'
 make[1]: Entering directory '/home/runner/work/jdcloud-be6500-build/jdcloud-be6500-build/source'
-make[1]: *** No rule to make target 'package/utils/lua/host-compile'.  Stop.
+make[1]: Circular package/firmware/linux-firmware/compile <- package/kernel/linux/compile dependency dropped.
++ mkdir -p /home/runner/work/jdcloud-be6500-build/jdcloud-be6500-build/source/staging_dir/target-aarch64_cortex-a53_musl
++ cd /home/runner/work/jdcloud-be6500-build/jdcloud-be6500-build/source/staging_dir/target-aarch64_cortex-a53_musl
++ mkdir -p bin lib stamp usr/include usr/lib
+mkdir -p /home/runner/work/jdcloud-be6500-build/jdcloud-be6500-build/source/build_dir/target-aarch64_cortex-a53_musl/stamp
+touch /home/runner/work/jdcloud-be6500-build/jdcloud-be6500-build/source/staging_dir/target-aarch64_cortex-a53_musl/.prepared
+make[2]: Entering directory '/home/runner/work/jdcloud-be6500-build/jdcloud-be6500-build/source/package/utils/lua'
+. /home/runner/work/jdcloud-be6500-build/jdcloud-be6500-build/source/include/shell.sh; /home/runner/work/jdcloud-be6500-build/jdcloud-be6500-build/source/staging_dir/host/bin/libdeflate-gzip -dc /home/runner/work/jdcloud-be6500-build/jdcloud-be6500-build/source/dl/lua-5.1.5.tar.gz | tar -C /home/runner/work/jdcloud-be6500-build/jdcloud-be6500-build/source/build_dir/hostpkg/lua-5.1.5/.. -xf -
+bash: line 1: /home/runner/work/jdcloud-be6500-build/jdcloud-be6500-build/source/staging_dir/host/bin/libdeflate-gzip: No such file or directory
+tar: This does not look like a tar archive
+tar: Exiting with failure status due to previous errors
+make[2]: *** [Makefile:192: /home/runner/work/jdcloud-be6500-build/jdcloud-be6500-build/source/build_dir/hostpkg/lua-5.1.5/.preparedf52fd434809e2f1b7bae35bbe973aa73_6664517399ebbbc92a37c5bb081b5c53] Error 2
+make[2]: Leaving directory '/home/runner/work/jdcloud-be6500-build/jdcloud-be6500-build/source/package/utils/lua'
+time: package/utils/lua/host-compile#0.02#0.02#0.04
+    ERROR: package/utils/lua [host] failed to build.
+make[1]: *** [package/Makefile:255: package/utils/lua/host/compile] Error 1
 make[1]: Leaving directory '/home/runner/work/jdcloud-be6500-build/jdcloud-be6500-build/source'
-make: *** [/home/runner/work/jdcloud-be6500-build/jdcloud-be6500-build/source/include/toplevel.mk:272: package/utils/lua/host-compile] Error 2
+make: *** [/home/runner/work/jdcloud-be6500-build/jdcloud-be6500-build/source/include/toplevel.mk:272: package/feeds/packages/open-app-filter/compile] Error 2
 ==== tree ====
 total 192
-drwxr-xr-x  6 runner runner   4096 Nov 18 01:09 .
-drwxr-xr-x  3 runner runner   4096 Nov 18 01:07 ..
-drwxr-xr-x  7 runner runner   4096 Nov 18 01:07 .git
-drwxr-xr-x  3 runner runner   4096 Nov 18 01:07 .github
--rw-r--r--  1 runner runner    496 Nov 18 01:07 README.md
--rw-r--r--  1 runner runner   1481 Nov 18 01:09 build.log
--rw-r--r--  1 runner runner    547 Nov 18 01:07 config.seed
--rw-r--r--  1 runner runner   2744 Nov 18 01:09 defconfig.log
--rw-r--r--  1 runner runner      2 Nov 18 01:09 defconfig.rc
-drwxr-xr-x  2 runner runner   4096 Nov 18 01:07 diag
--rw-r--r--  1 runner runner 129660 Nov 18 01:09 feeds.log
--rw-r--r--  1 runner runner      2 Nov 18 01:09 feeds.rc
--rw-r--r--  1 runner runner   2107 Nov 18 01:09 fetch.log
--rw-r--r--  1 runner runner      2 Nov 18 01:09 fetch.rc
--rw-r--r--  1 runner runner    667 Nov 18 01:09 lua_verbose.log
-drwxr-xr-x 18 runner runner   4096 Nov 18 01:09 source
--rw-r--r--  1 runner runner   1464 Nov 18 01:09 step7.log
+drwxr-xr-x  6 runner runner   4096 Nov 18 01:16 .
+drwxr-xr-x  3 runner runner   4096 Nov 18 01:13 ..
+drwxr-xr-x  7 runner runner   4096 Nov 18 01:13 .git
+drwxr-xr-x  3 runner runner   4096 Nov 18 01:13 .github
+-rw-r--r--  1 runner runner    496 Nov 18 01:13 README.md
+-rw-r--r--  1 runner runner   1481 Nov 18 01:16 build.log
+-rw-r--r--  1 runner runner    547 Nov 18 01:13 config.seed
+-rw-r--r--  1 runner runner   2744 Nov 18 01:16 defconfig.log
+-rw-r--r--  1 runner runner      2 Nov 18 01:16 defconfig.rc
+drwxr-xr-x  2 runner runner   4096 Nov 18 01:13 diag
+-rw-r--r--  1 runner runner 129660 Nov 18 01:16 feeds.log
+-rw-r--r--  1 runner runner      2 Nov 18 01:16 feeds.rc
+-rw-r--r--  1 runner runner   2107 Nov 18 01:15 fetch.log
+-rw-r--r--  1 runner runner      2 Nov 18 01:15 fetch.rc
+-rw-r--r--  1 runner runner   2502 Nov 18 01:16 lua_verbose.log
+drwxr-xr-x 18 runner runner   4096 Nov 18 01:16 source
+-rw-r--r--  1 runner runner   1464 Nov 18 01:16 step7.log
 478M	source
